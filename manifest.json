@@ -1,0 +1,16 @@
+{
+	"BundleType": "Application",
+	"RequiredPermissions": [
+		"https://*",
+		"http://*"
+	],
+	"ApiPermissions" : {
+		"core" : ["public"],
+	},
+	"AppName": {
+		"en": "Spotipedia",
+},
+	"SupportedLanguages": [
+		"en",
+],
+}

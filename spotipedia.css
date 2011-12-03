@@ -1,0 +1,9 @@
+@import url("sp://import/css/api.css");
+@import url("sp://import/css/eve.css");
+@import url("wikipedia.css");
+@import url("wikipedia2.css");
+
+.sp-player {
+  width: 200px;
+  height: 200px;
+}

@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+    <meta charset="utf-8">
+
+    <link rel="stylesheet" href="sp://appstore/spotipedia.css">
+
+    <script type="text/javascript" src="sp://appstore/jquery-1.7.1.min.js"></script>
+    <script>
+      var sp = getSpotifyApi(1);
+    	var m = sp.require("sp://import/scripts/api/models")
+    	var v = sp.require("sp://import/scripts/api/views")
+
+      $(function() {
+        setInterval(function() {
+          if(pageToLoad) {
+            loadPage(pageToLoad)
+          }
+          pageToLoad = null
+        }, 1000)
+      })
+
+    var pageToLoad = "Humbug_(album)"
+
+
+    function loadPage(page) {
+      console.log("Loading page " + page)
+      $.getJSON("http://en.wikipedia.org/w/api.php?action=parse&format=json&callback=?", {page:page, prop:"text"}, function(data) {
+
+        $("#firstHeading").text(decodeURIComponent(page.replace(/\_/g, " ")))
+
+        console.log(data)
+        var html = data.parse.text["*"]
+        html = html.replace(/\/\//g, "http://")
+
+        $("#text").html(html)
+
+        $("#text a").click(function() {
+          if($(this).attr("href").indexOf("/wiki") == 0) {
+            pageToLoad = $(this).attr("href").substr(6)
+
+          }
+        })
+
+        $(".infobox .album").each(function() {
+          var name = $(this).text()
+          console.log(m.player.track.data.uri)
+          var uri = "spotify:track:3A3pZaDevtwmVGnPhd7FD2"
+          console.log(m.player.track )
+          if(m.player.track) {
+            playing = m.player.playing && m.player.track.data.uri == uri
+          } else {
+            playing = false
+          }
+          playerClass = playing ? "sp-player-playing" : "sp-player-paused"
+
+          $("a.image", $(this).parent().parent()).wrap(function() {
+            return '<div class="sp-player ' + playerClass + '" tabindex="0"><div class="sp-player-image">'
+              + '</div><button class="sp-player-button" style="display: block" data-spotifyuri="' + uri + '"></button></div>'
+          })
+        })
+
+        $(".sp-player-button").click(function() {
+          console.log(1111)
+          var playerDiv = $(this).parent()
+          if(playerDiv.hasClass("sp-player-paused")) {
+            var uri = $(this).attr("data-spotifyuri")
+            //var player = new v.Player()
+            m.player.play(uri)
+          } else {
+            m.player.playing = false
+          }
+
+          playerDiv.toggleClass("sp-player-paused")
+          playerDiv.toggleClass("sp-player-playing")
+        })
+
+
+      })
+    }
+    </script>
+</head>
+
+<body>
+        <div id="content">
+          <h1 id="firstHeading" class="firstHeading">Loading...</h1>
+				  <div id="siteSub">From Wikipedia, the free encyclopedia</div>
+
+          <div id="text"></div>
+        </div>
+</body></html>
