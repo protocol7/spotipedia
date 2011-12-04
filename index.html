@@ -12,11 +12,17 @@
     	var m = sp.require("sp://import/scripts/api/models")
     	var v = sp.require("sp://import/scripts/api/views")
 
+      var pageToLoad
+      var playedContext
+
       sp.trackPlayer.addEventListener("playerStateChanged", function (event) {
-       if(event.data.curtrack && !skipReload) {
-          console.log("Loading new current playing")
-          loadCurrentPlaying()
-          skipReload = false
+        if(event.data.curtrack) {
+          console.log(playedContext)
+          console.log( m.player.context)
+          if(!playedContext || playedContext != m.player.context) {
+              console.log("Loading new current playing")
+              loadCurrentPlaying()
+          }
         }
       });
 
@@ -32,9 +38,6 @@
           pageToLoad = null
         }, 200)
       })
-
-      var pageToLoad
-      var skipReload = false
 
       function loadCurrentPlaying() {
         if(m.player.track) {
@@ -57,6 +60,37 @@
       pageToLoad = page
     }
 
+    function wrapCover(query, infobox, isArtist) {
+      var s = new m.Search(query, function(data) {
+            // TODO validate
+            var albumUri = data.results[0].data.uri
+            m.Album.fromURI(albumUri, function(album) {
+              var playing = m.playing && m.player.content == album.data.uri
+              var playerClass = playing ? "sp-player-playing" : "sp-player-paused"
+
+              $("a.image", infobox).wrap(function() {
+                return '<div class="sp-player ' + playerClass + '" tabindex="0"><div class="sp-player-image">'
+                  + '</div><button class="sp-player-button" style="display: block"></button></div>'
+              })
+
+              $(".sp-player-button").click(function() {
+                var playerDiv = $(this).parent()
+                var ctx = isArtist ? album.data.artist.uri : album
+                playedContext = ctx
+                if(playerDiv.hasClass("sp-player-paused")) {
+                  m.player.play(album.data.tracks[0].uri, ctx)
+                } else {
+                  m.player.playing = false
+                }
+
+                playerDiv.toggleClass("sp-player-paused")
+                playerDiv.toggleClass("sp-player-playing")
+              })
+            })
+          })
+    }
+
+
     function loadPage(page) {
       console.log("Loading page " + page)
 
@@ -77,6 +111,16 @@
           }
         })
 
+        // hacky way of finding an artist infobox
+        $(".infobox th:contains('Genres')").each(function() {
+          var infobox = $(this).parent().parent().parent()
+          var artistElm = $("tr:first-child th", infobox)
+          var artistName = artistElm.text()
+
+          console.log('Searching Spotify for artist "' + artistName + '"')
+          wrapCover('artist:"' + artistName + '"', infobox, true)
+        })
+
         $(".infobox .album").each(function() {
           var infobox = $(this).parent().parent().parent()
           var albumElm = $(this)
@@ -85,30 +129,7 @@
           var artist = $(".contributor", infobox).text()
 
           console.log('Searching Spotify for album "' + name + '" with artist "' + artist + '"')
-          var s = new m.Search('album:"' + name + '" artist:"' + artist + '"', function(data) {
-            m.Album.fromURI(data.results[0].data.uri, function(album) {
-              var playing = m.playing && m.player.content == album.data.uri
-              var playerClass = playing ? "sp-player-playing" : "sp-player-paused"
-
-              $("a.image", infobox).wrap(function() {
-                return '<div class="sp-player ' + playerClass + '" tabindex="0"><div class="sp-player-image">'
-                  + '</div><button class="sp-player-button" style="display: block"></button></div>'
-              })
-
-              $(".sp-player-button").click(function() {
-                var playerDiv = $(this).parent()
-                skipReload = true
-                if(playerDiv.hasClass("sp-player-paused")) {
-                  m.player.play(album.data.tracks[0].uri, album)
-                } else {
-                  m.player.playing = false
-                }
-
-                playerDiv.toggleClass("sp-player-paused")
-                playerDiv.toggleClass("sp-player-playing")
-              })
-            })
-          })
+          wrapCover('album:"' + name + '" artist:"' + artist + '"', infobox, false)
        })
       })
     }
