@@ -4,6 +4,6 @@
 @import url("wikipedia2.css");
 
 .sp-player {
-  width: 200px;
-  height: 200px;
+  width: auto;
+  height: auto;
 }
