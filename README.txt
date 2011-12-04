@@ -14,3 +14,4 @@ Bugs/limitations
 * Reloads incorrectly when playing from an artist page
 * Only allows playing from artist/album pages with a picture in the infobox
 * No support for back/forward navigation
+* Sometimes does a poor job at finding the right Wikipedia page for the currently playing artist
