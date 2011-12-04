@@ -6,7 +6,7 @@ To install:
 * mkdir ~/Spotify
 * cd ~/Spotify
 * git clone git://github.com/protocol7/spotipedia.git
-* In Spotify, enter the URI spotify:app:spotipedia into the search area and press enter. The app should allow and allow you to add it to your sidebar
+* In Spotify, enter the URI spotify:app:spotipedia into the search area and press enter. The app should start and allow you to add it to your sidebar
 * Enjoy!
 
 
