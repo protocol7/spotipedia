@@ -2,9 +2,11 @@
 <html lang="en"><head>
     <meta charset="utf-8">
 
-    <link rel="stylesheet" href="sp://appstore/spotipedia.css">
+    <link rel="stylesheet" href="spotipedia.css">
 
-    <script type="text/javascript" src="sp://appstore/jquery-1.7.1.min.js"></script>
+    <script type="text/javascript" src="jquery-1.7.1.min.js"></script>
+    <script type="text/javascript" src="wikipedia.js"></script>
+
     <script>
       var sp = getSpotifyApi(1);
     	var m = sp.require("sp://import/scripts/api/models")
@@ -34,14 +36,17 @@
       var pageToLoad
       var skipReload = false
 
-    function loadCurrentPlaying() {
+      function loadCurrentPlaying() {
         if(m.player.track) {
           console.log("Player got context")
           if(m.player.track.artists) {
+            $("#intro").hide()
+            $("#content").show()
+
             var artist = m.player.track.artists[0].name
             console.log("Searching wikipedia for artist " + artist)
 
-            search(artist, "artist", function(match) {
+            wikipedia.search(artist, "artist", function(match) {
               open(match)
             })
           }
@@ -52,67 +57,14 @@
       pageToLoad = page
     }
 
-    var searchTypes = {
-      "artist": ["(artist)", "(band)", "(musician)"],
-      "album": ["(album)"]
-    }
-
-    function search(term, type, callback) {
-      term = term.toLowerCase()
-      type = type.toLowerCase()
-
-      console.log("Searching for " + term + " of type " + type)
-      $.getJSON("http://en.wikipedia.org/w/api.php?action=opensearch&format=json&limit=500&callback=?", {search:term}, function(data) {
-        var results = data[1]
-        var typeStrings = searchTypes[type]
-
-        // try finding a match containing a type string
-        for(i in results) {
-          var result = results[i]
-          for(j in typeStrings) {
-            var typeString = typeStrings[j]
-            if(result.toLowerCase().indexOf(typeString) > 0) {
-              console.log("Found match containg search type " + result)
-              callback(result)
-              return
-            }
-          }
-        }
-
-        // didn't find anything with the search type, try finding an exact match
-        for(i in results) {
-          var result = results[i]
-         if(result.toLowerCase() == term) {
-            console.log("Found exact match " + result)
-            callback(result)
-            return
-          }
-        }
-
-        // didn't find an exact match, just return the first match, if any
-        if(results.length > 0) {
-          console.log("Using first match " + results[0])
-          callback(results[0])
-          return
-        } else {
-          console.log("No match ")
-          // nothing was found, give up
-          callback(null)
-        }
-     })
-    }
-
     function loadPage(page) {
       console.log("Loading page " + page)
-      $.getJSON("http://en.wikipedia.org/w/api.php?action=parse&format=json&callback=?&page=" + page, {prop:"text"}, function(data) {
+
+      wikipedia.html(page, function(header, html) {
         console.log("Page loaded " + page)
-        $("#firstHeading").text(decodeURIComponent(page.replace(/\_/g, " ")))
+        $("#firstHeading").text(header)
 
         window.scrollTo(0, 0)
-
-
-        var html = data.parse.text["*"]
-        html = html.replace(/\/\//g, "http://")
 
         $("#text").html(html)
 
@@ -164,7 +116,10 @@
 </head>
 
 <body>
-        <div id="content">
+  <div id="intro">
+    Play a track to show the artist here
+  </div>
+        <div id="content" style="display:none">
           <h1 id="firstHeading" class="firstHeading">Loading...</h1>
 				  <div id="siteSub">From Wikipedia, the free encyclopedia</div>
 
