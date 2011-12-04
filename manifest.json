@@ -1,16 +1,16 @@
 {
 	"BundleType": "Application",
 	"RequiredPermissions": [
-		"https://*",
-		"http://*"
+		"http://*.wikipedia.org"
 	],
 	"ApiPermissions" : {
 		"core" : ["public"],
 	},
+	"AppIcon": {
+		"36x18": "wikipedia.png"
+	},
 	"AppName": {
 		"en": "Spotipedia",
-},
-	"SupportedLanguages": [
-		"en",
-],
+  },
+	"SupportedLanguages": ["en"],
 }
